@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dictator Battle</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background: #0a0a0f;
+        color: #e8e0c8;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: center;
+        min-height: 100vh;
+        padding: 20px;
+        gap: 20px;
+        overflow-x: hidden;
+      }
+
+      #game-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+        flex-shrink: 0;
+      }
+
+      #canvas-container {
+        position: relative;
+        border: 2px solid #4a3728;
+        border-radius: 4px;
+        overflow: hidden;
+        background: #111118;
+      }
+
+      canvas {
+        display: block;
+      }
+
+      #phase-bar {
+        position: absolute;
+        top: 10px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.78);
+        color: #f0d060;
+        font-size: 36px;
+        font-weight: bold;
+        padding: 6px 20px;
+        border-radius: 24px;
+        border: 2px solid #6a5030;
+        pointer-events: none;
+        white-space: nowrap;
+        text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        letter-spacing: 1px;
+      }
+
+      #ui-panel {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+        min-width: 240px;
+        max-width: 280px;
+      }
+
+      .panel-section {
+        background: #12121a;
+        border: 1px solid #2a2240;
+        border-radius: 8px;
+        padding: 12px 14px;
+      }
+
+      .panel-section h3 {
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: #6060a0;
+        margin-bottom: 10px;
+      }
+
+      .stat-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+        margin-bottom: 4px;
+      }
+
+      .stat-value {
+        color: #f0d060;
+        font-weight: bold;
+      }
+
+      #status-badge {
+        display: inline-block;
+        padding: 2px 10px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: bold;
+        background: #1a2a1a;
+        color: #60d060;
+        border: 1px solid #40a040;
+      }
+
+      #status-badge.running {
+        background: #2a1a00;
+        color: #f0a020;
+        border-color: #a06010;
+      }
+
+      #status-badge.win {
+        background: #1a2a10;
+        color: #80ff40;
+        border-color: #50c020;
+      }
+
+      #status-badge.lose {
+        background: #2a1010;
+        color: #ff5050;
+        border-color: #a02020;
+      }
+
+      #dict-avatar-wrap {
+        width: 64px;
+        height: 64px;
+        border-radius: 50%;
+        overflow: hidden;
+        border: 3px solid #a080ff;
+        background: #2a2050;
+        position: relative;
+        flex-shrink: 0;
+      }
+
+      #dict-avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      #dict-avatar-fallback {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+        font-weight: bold;
+        color: #fff;
+      }
+
+      .dict-avatar-row {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+
+      .dict-avatar-name {
+        font-size: 13px;
+        font-weight: bold;
+        color: #e0d8f0;
+        line-height: 1.3;
+      }
+
+      .dict-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+      }
+
+      .dict-btn {
+        background: #1a1a28;
+        border: 2px solid #2a2a40;
+        border-radius: 6px;
+        color: #c0b8d0;
+        font-size: 11px;
+        padding: 6px 4px;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.15s;
+      }
+
+      .dict-btn:hover {
+        border-color: #6060c0;
+        background: #22223a;
+      }
+
+      .dict-btn.selected {
+        border-color: #a080ff;
+        background: #2a2050;
+        color: #ffffff;
+      }
+
+      .bet-row {
+        display: flex;
+        gap: 6px;
+      }
+
+      .bet-btn {
+        flex: 1;
+        background: #1a1a28;
+        border: 2px solid #2a2a40;
+        border-radius: 6px;
+        color: #c0b8d0;
+        font-size: 12px;
+        padding: 7px 4px;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      .bet-btn:hover {
+        border-color: #60a060;
+        background: #1a2a1a;
+      }
+
+      .bet-btn.selected {
+        border-color: #50d050;
+        background: #152015;
+        color: #80ff80;
+      }
+
+      select {
+        width: 100%;
+        background: #1a1a28;
+        border: 1px solid #3a3a50;
+        border-radius: 6px;
+        color: #c0b8d0;
+        font-size: 13px;
+        padding: 6px 8px;
+        outline: none;
+        cursor: pointer;
+      }
+
+      select:focus {
+        border-color: #6060c0;
+      }
+
+      #seed-input {
+        width: 100%;
+        background: #1a1a28;
+        border: 1px solid #3a3a50;
+        border-radius: 6px;
+        color: #c0b8d0;
+        font-size: 12px;
+        padding: 6px 8px;
+        outline: none;
+        margin-bottom: 6px;
+      }
+
+      #seed-input:focus {
+        border-color: #6060c0;
+      }
+
+      #seed-display {
+        font-size: 11px;
+        color: #706888;
+        word-break: break-all;
+      }
+
+      #play-btn {
+        width: 100%;
+        background: linear-gradient(135deg, #6030c0, #4020a0);
+        border: none;
+        border-radius: 8px;
+        color: #ffffff;
+        font-size: 16px;
+        font-weight: bold;
+        padding: 12px;
+        cursor: pointer;
+        letter-spacing: 2px;
+        transition: all 0.15s;
+        text-transform: uppercase;
+      }
+
+      #play-btn:hover:not(:disabled) {
+        background: linear-gradient(135deg, #7040d0, #5030b0);
+        transform: translateY(-1px);
+      }
+
+      #play-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      #speedup-btn {
+        width: 100%;
+        background: #1a1a28;
+        border: 1px solid #3a3a50;
+        border-radius: 6px;
+        color: #c0b8d0;
+        font-size: 12px;
+        padding: 7px;
+        cursor: pointer;
+        transition: all 0.15s;
+      }
+
+      #speedup-btn.active {
+        border-color: #d0a030;
+        background: #2a2010;
+        color: #f0c050;
+      }
+
+      /* Popup overlay */
+      #popup-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.75);
+        z-index: 100;
+        justify-content: center;
+        align-items: center;
+      }
+
+      #popup-overlay.visible {
+        display: flex;
+      }
+
+      #popup-box {
+        background: #16161e;
+        border: 2px solid #3a3060;
+        border-radius: 14px;
+        padding: 30px 36px;
+        text-align: center;
+        min-width: 280px;
+        max-width: 360px;
+        animation: popupIn 0.25s ease;
+      }
+
+      @keyframes popupIn {
+        from { transform: scale(0.85); opacity: 0; }
+        to   { transform: scale(1); opacity: 1; }
+      }
+
+      #popup-icon {
+        font-size: 48px;
+        margin-bottom: 12px;
+        display: block;
+      }
+
+      #popup-title {
+        font-size: 22px;
+        font-weight: bold;
+        margin-bottom: 8px;
+      }
+
+      #popup-title.win { color: #80ff60; }
+      #popup-title.lose { color: #ff5050; }
+
+      #popup-body {
+        font-size: 14px;
+        color: #b0a8c0;
+        margin-bottom: 20px;
+        line-height: 1.5;
+      }
+
+      #popup-btn {
+        background: linear-gradient(135deg, #6030c0, #4020a0);
+        border: none;
+        border-radius: 8px;
+        color: #fff;
+        font-size: 14px;
+        font-weight: bold;
+        padding: 10px 28px;
+        cursor: pointer;
+        letter-spacing: 1px;
+      }
+
+      #popup-btn:hover {
+        background: linear-gradient(135deg, #7040d0, #5030b0);
+      }
+
+      #auto-close-bar {
+        height: 3px;
+        background: #4040a0;
+        border-radius: 2px;
+        margin-top: 14px;
+        transition: width linear;
+      }
+
+      @media (max-width: 700px) {
+        body {
+          flex-direction: column;
+          align-items: center;
+          padding: 10px;
+        }
+        #ui-panel {
+          max-width: 100%;
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="game-wrapper">
+      <div id="canvas-container">
+        <canvas id="game-canvas"></canvas>
+        <div id="phase-bar">READY</div>
+      </div>
+    </div>
+
+    <div id="ui-panel">
+      <!-- Stats -->
+      <div class="panel-section">
+        <h3>Account</h3>
+        <div class="stat-row">
+          <span>Balance</span>
+          <span class="stat-value" id="balance-display">1000 FUN</span>
+        </div>
+        <div class="stat-row">
+          <span>Status</span>
+          <span id="status-badge">READY</span>
+        </div>
+      </div>
+
+      <!-- Dictator Select -->
+      <div class="panel-section">
+        <h3>Choose Dictator</h3>
+        <div class="dict-avatar-row">
+          <div id="dict-avatar-wrap">
+            <img id="dict-avatar-img" src="/assets/arafat.jpg" alt="" />
+            <div id="dict-avatar-fallback" style="display:none;">YA</div>
+          </div>
+          <div class="dict-avatar-name" id="dict-avatar-name">Yasser Arafat</div>
+        </div>
+        <div class="dict-grid">
+          <button class="dict-btn selected" data-id="arafat">Yasser<br>Arafat</button>
+          <button class="dict-btn" data-id="hussein">Saddam<br>Hussein</button>
+          <button class="dict-btn" data-id="gaddafi">Muammar<br>Gaddafi</button>
+          <button class="dict-btn" data-id="lukashenko">Alexander<br>Lukashenko</button>
+        </div>
+      </div>
+
+      <!-- Bet Select -->
+      <div class="panel-section">
+        <h3>Bet Amount</h3>
+        <div class="bet-row">
+          <button class="bet-btn selected" data-amount="10">10</button>
+          <button class="bet-btn" data-amount="20">20</button>
+          <button class="bet-btn" data-amount="50">50</button>
+        </div>
+      </div>
+
+      <!-- Settings -->
+      <div class="panel-section">
+        <h3>Settings</h3>
+        <div class="stat-row" style="margin-bottom:8px;">
+          <span style="font-size:12px;">Win Chance</span>
+        </div>
+        <select id="win-chance-select">
+          <option value="0.1">10%</option>
+          <option value="0.3">30%</option>
+          <option value="0.5" selected>50%</option>
+          <option value="0.7">70%</option>
+          <option value="0.9">90%</option>
+        </select>
+        <div style="margin-top:10px; font-size:12px; color:#706888; margin-bottom:6px;">RNG Seed (optional)</div>
+        <input type="text" id="seed-input" placeholder="Leave empty for random" />
+        <div id="seed-display">Seed: —</div>
+      </div>
+
+      <!-- Bet display -->
+      <div class="panel-section">
+        <h3>Round Info</h3>
+        <div class="stat-row">
+          <span>Dictator</span>
+          <span class="stat-value" id="selected-dict-display">Arafat</span>
+        </div>
+        <div class="stat-row">
+          <span>Bet</span>
+          <span class="stat-value" id="selected-bet-display">10 FUN</span>
+        </div>
+        <div class="stat-row">
+          <span>Win Chance</span>
+          <span class="stat-value" id="wc-display">50%</span>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="panel-section">
+        <button id="play-btn">▶ PLAY</button>
+        <div style="margin-top:8px;">
+          <button id="speedup-btn">⚡ Speed 1x</button>
+        </div>
+        <div style="margin-top:8px; font-size:11px; color:#504868; text-align:center;">
+          SPACE to play / restart
+        </div>
+      </div>
+    </div>
+
+    <!-- Popup -->
+    <div id="popup-overlay">
+      <div id="popup-box">
+        <span id="popup-icon">🏆</span>
+        <div id="popup-title" class="win">You Win!</div>
+        <div id="popup-body">Congratulations!</div>
+        <button id="popup-btn">Play</button>
+        <div id="auto-close-bar" style="width:100%"></div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

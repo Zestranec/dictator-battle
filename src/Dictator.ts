@@ -11,7 +11,7 @@ export interface DictatorConfig {
   initials: string;
 }
 
-const ASSET_BASE = import.meta.env.BASE_URL; // "/" locally, "/dictator-battle/" on GitHub Pages
+const ASSET_BASE = ((import.meta as any).env?.BASE_URL as string) || '/';// "/" locally, "/dictator-battle/" on GitHub Pages
 
 export const DICTATOR_CONFIGS: DictatorConfig[] = [
   {

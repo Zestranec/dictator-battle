@@ -11,12 +11,14 @@ export interface DictatorConfig {
   initials: string;
 }
 
+const ASSET_BASE = import.meta.env.BASE_URL; // "/" locally, "/dictator-battle/" on GitHub Pages
+
 export const DICTATOR_CONFIGS: DictatorConfig[] = [
   {
     id: 'arafat',
     name: 'Yasser Arafat',
     shortName: 'Arafat',
-    assetPath: '${ASSET_BASE}assets/arafat.jpg',
+    assetPath: `${ASSET_BASE}assets/arafat.jpg`,
     fallbackColor: 0x3a5a2a,
     initials: 'YA',
   },
@@ -24,7 +26,7 @@ export const DICTATOR_CONFIGS: DictatorConfig[] = [
     id: 'hussein',
     name: 'Saddam Hussein',
     shortName: 'Hussein',
-    assetPath: '${ASSET_BASE}assets/hussein.jpg',
+    assetPath: `${ASSET_BASE}assets/hussein.jpg`,
     fallbackColor: 0x5a3a1a,
     initials: 'SH',
   },
@@ -32,7 +34,7 @@ export const DICTATOR_CONFIGS: DictatorConfig[] = [
     id: 'gaddafi',
     name: 'Muammar Gaddafi',
     shortName: 'Gaddafi',
-    assetPath: '${ASSET_BASE}assets/gaddafi.jpg',
+    assetPath: `${ASSET_BASE}assets/gaddafi.jpg`,
     fallbackColor: 0x2a2a5a,
     initials: 'MG',
   },
@@ -40,7 +42,7 @@ export const DICTATOR_CONFIGS: DictatorConfig[] = [
     id: 'lukashenko',
     name: 'Alexander Lukashenko',
     shortName: 'Lukashenko',
-    assetPath: '${ASSET_BASE}assets/lukashenko.jpg',
+    assetPath: `${ASSET_BASE}assets/lukashenko.jpg`,
     fallbackColor: 0x5a1a1a,
     initials: 'AL',
   },
